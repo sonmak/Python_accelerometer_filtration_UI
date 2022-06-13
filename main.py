@@ -200,12 +200,12 @@ def analysis(calendar_raw, timer_raw, acc_x, acc_y, acc_z, counter, hour_stop, m
         print("Average breaths per minute from X axis:", breaths_per_minute_x)
         print("Average breaths per minute from Y axis:", breaths_per_minute_y)
         print()
-        plot_graphs(acc_x_cut, acc_y_cut, acc_z_cut, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y)
+        plot_graphs(acc_x_cut, acc_y_cut, acc_z_cut, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y, time)
         choice = input("What do you want to do next? To continue work press 'y', if you've already sick of it, please, press 'e': ")
         menu(choice)
 
 
-def plot_graphs(acc_x, acc_y, acc_z, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y):
+def plot_graphs(acc_x, acc_y, acc_z, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y, time):
     # rysowanie X osi
     f_1 = plt.figure(1, figsize=[13, 4.8])
     # Dodanie subplotów do naszego plotu:)
@@ -312,7 +312,7 @@ def filter_data(some_array):
     #normalizacja danych
     normalized_array = stats.zscore(some_array)
     #fitracja danych znormalizowanych
-    filtered_array = savgol_filter(normalized_array, 100, 5)
+    filtered_array = savgol_filter(normalized_array, 101, 5)
     return filtered_array
 
 # funkcja, dzięki której sklejamy wprowadzone przez użytkownika dane odnośnie godziny i daty
