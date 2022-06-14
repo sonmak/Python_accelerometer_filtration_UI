@@ -6,7 +6,16 @@ import scipy.stats as stats
 from scipy.signal import savgol_filter
 from scipy.signal import find_peaks
 from math import ceil
-
+    
+calendar = []
+timer = []
+acc_x = []
+acc_y = []
+acc_z = []
+gyro_x = []
+gyro_y = []
+gyro_z = []
+counter = []
 
 # funkcja, która czyści konsolę
 def clear_console():
@@ -16,6 +25,15 @@ def clear_console():
 # funkcja odpowiadająca za komunikację z użytkownikiem podczas wczytania pliku
 def start():
     clear_console()
+    calendar.clear()
+    timer.clear()
+    acc_x.clear()
+    acc_y.clear()
+    acc_z.clear()
+    gyro_x.clear()
+    gyro_y.clear()
+    gyro_z.clear()
+    counter.clear()
     print("-----------------------------------------------------------------------------------------------------------")
     print("                                              START                                                        ")
     print("-----------------------------------------------------------------------------------------------------------")
@@ -52,15 +70,6 @@ def read_file(path):
     # liczba column w pliku tekstowym
     number_of_variables = 9
 
-    calendar = []
-    timer = []
-    acc_x = []
-    acc_y = []
-    acc_z = []
-    gyro_x = []
-    gyro_y = []
-    gyro_z = []
-    counter = []
 
     with open(path, 'r') as reader:
         for line in reader:
@@ -194,36 +203,38 @@ def analysis(calendar_raw, timer_raw, acc_x, acc_y, acc_z, counter, hour_stop, m
         peaks_y = find_peaks_custom(acc_y_filtered)
         # print(peaks_x)
         time = calculate_time(hour_begin, hour_stop, minute_begin, minute_stop, seconds_begin, seconds_stop)
-        print("Czas, który zajmuje analiza: ", time)
+        print(time)
         breaths_per_minute_x = average_breath_per_minute(peaks_x, time)
         breaths_per_minute_y = average_breath_per_minute(peaks_y, time)
         print("Average breaths per minute from X axis:", breaths_per_minute_x)
         print("Average breaths per minute from Y axis:", breaths_per_minute_y)
         print()
-        plot_graphs(acc_x_cut, acc_y_cut, acc_z_cut, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y, time)
+        plot_graphs(acc_x_cut, acc_y_cut, acc_z_cut, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y)
         choice = input("What do you want to do next? To continue work press 'y', if you've already sick of it, please, press 'e': ")
         menu(choice)
 
 
-def plot_graphs(acc_x, acc_y, acc_z, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y, time):
+def plot_graphs(acc_x, acc_y, acc_z, acc_x_filtered, acc_y_filtered, peaks_x, peaks_y):
     # rysowanie X osi
     f_1 = plt.figure(1, figsize=[13, 4.8])
     # Dodanie subplotów do naszego plotu:)
     ax_1 = f_1.add_subplot(121)
     ax_2 = f_1.add_subplot(122)
-    # Disable x axis of our plot
-    ax_1.axes.xaxis.set_visible(False)
-    ax_2.axes.xaxis.set_visible(False)
+
     # Subplot 1 of acc_x axis
-    ax_1.plot(acc_x, linewidth=0.7)
+    ax_1.plot(np.arange(len(acc_x)), acc_x, linewidth=0.7)
     # Title subplotu
     ax_1.set_title("Unfiltered data")
+    ax_1.set_xlabel("Samples")
+    ax_1.set_ylabel("Raw data")
     # Subplot 2 of acc_x axis
-    ax_2.plot(acc_x_filtered, 'r', linewidth=0.7)
+    ax_2.plot(np.arange(len(acc_x_filtered)), acc_x_filtered, 'r', linewidth=0.7)
     ax_2.axhline(y=0, color='k', linewidth=0.5, linestyle='--')
     ax_2.plot(peaks_x, acc_x_filtered[peaks_x], "v")
     # Title subplotu
     ax_2.set_title("Filtered and normalized  data")
+    ax_2.set_xlabel("Samples")
+    ax_2.set_ylabel("Normalized filtered data")
     ax_2.legend(['Data', 'Zero-level', 'Peaks'])
     # Title całego plotu
     f_1.suptitle("X-axis")
@@ -235,31 +246,31 @@ def plot_graphs(acc_x, acc_y, acc_z, acc_x_filtered, acc_y_filtered, peaks_x, pe
     # Dodanie subplotów do naszego plotu:)
     ax_1 = f_2.add_subplot(121)
     ax_2 = f_2.add_subplot(122)
-    # Disable x axis of our plot
-    ax_1.axes.xaxis.set_visible(False)
-    ax_2.axes.xaxis.set_visible(False)
     # Subplot 1 of acc_x axis
-    ax_1.plot(acc_y, linewidth=0.7)
+    ax_1.plot(np.arange(len(acc_y)), acc_y, linewidth=0.7)
     # Title subplotu
     ax_1.set_title("Unfiltered data")
+    ax_1.set_xlabel("Samples")
+    ax_1.set_ylabel("Raw data")
     # Subplot 2 of acc_x axis
-    ax_2.plot(acc_y_filtered, 'r', linewidth=0.7)
+    ax_2.plot(np.arange(len(acc_y_filtered)), acc_y_filtered, 'r', linewidth=0.7)
     ax_2.axhline(y=0, color='k', linewidth=0.5, linestyle='--')
     ax_2.plot(peaks_y, acc_y_filtered[peaks_y], "v")
     # Title subplotu
     ax_2.set_title("Filtered and normalized  data")
     ax_2.legend(['Data', 'Zero-level', 'Peaks'])
+    ax_2.set_xlabel("Samples")
+    ax_2.set_ylabel("Normalized filtered data")
     # Title całego plotu
     f_2.suptitle("Y-axis")
     # Display
     f_2.show()
 
-    # rysowanie Z osi
-    f_3 = plt.figure(3)
-    ax_3 = plt.gca()
-    ax_3.get_xaxis().set_visible(False)
-    plt.plot(acc_z, linewidth=0.7)
+    plt.figure(3)
+    plt.plot(np.arange(len(acc_z)), acc_z, linewidth=0.7)
     plt.suptitle("Z-axis")
+    plt.xlabel("Sample")
+    plt.ylabel("Raw data")
     # Display
     plt.show()
 
@@ -271,7 +282,7 @@ def calculate_time(hour_begin, hour_stop, minute_begin, minute_stop, seconds_beg
 
     if minute_stop > minute_begin and seconds_stop < seconds_begin:
         minute_diff = minute_stop - minute_begin - 1
-    elif minute_stop > minute_begin and seconds_stop >= seconds_begin:
+    elif minute_stop > minute_begin and seconds_stop > seconds_begin:
         minute_diff = minute_stop - minute_begin
     elif minute_stop == minute_begin:
         minute_diff = 0
@@ -279,7 +290,7 @@ def calculate_time(hour_begin, hour_stop, minute_begin, minute_stop, seconds_beg
         temp = 60 - minute_begin
         minute_diff = temp + minute_stop
 
-    seconds_result = seconds_result + minute_diff*60
+    seconds_result = seconds_result + minute_diff*60;
 
     if seconds_stop > seconds_begin or seconds_stop == seconds_begin:
         seconds_diff = seconds_stop - seconds_begin
@@ -309,9 +320,7 @@ def find_peaks_custom(some_peaks):
     return peaks
 
 def filter_data(some_array):
-    #normalizacja danych
     normalized_array = stats.zscore(some_array)
-    #fitracja danych znormalizowanych
     filtered_array = savgol_filter(normalized_array, 101, 5)
     return filtered_array
 
